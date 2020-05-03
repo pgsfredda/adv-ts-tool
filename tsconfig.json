@@ -1,0 +1,24 @@
+{
+    "compileOnSave": true,
+    "compilerOptions": {
+        "module": "system",
+        "lib": ["es2015", "dom"],
+        "target": "ES5",
+        "noImplicitAny": false,
+        "noEmitOnError": true,
+        "removeComments": true,
+        "preserveConstEnums": true,
+        "moduleResolution": "node",
+        "sourceMap": false,
+        "rootDir": "./src",
+        "outFile": "./dist/js/libs.js"
+    },
+    "include": [
+        "src/**/*.ts"
+    ],
+    "exclude": [
+        "node_modules",
+        "**/*.spec.ts",
+        "dist"
+    ]
+}

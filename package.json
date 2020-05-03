@@ -1,0 +1,33 @@
+{
+  "name": "advtstool",
+  "version": "1.0.0",
+  "description": "an adv definition library TS based",
+  "main": "src/index.html",
+  "scripts": {
+    "start": "tsc && concurrently \"npm run tsc:w\" \"npm run lite\" ",
+    "lite": "lite-server",
+    "tsc": "tsc",
+    "tsc:w": "tsc -w",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "minify": "./node_modules/.bin/uglifyjs --compress --mangle --output ./dist/js/libs.min.js ./dist/js/libs.js",
+    "copy": "cp -R ./src/js ./dist && cp -R ./src/assets ./dist",
+    "build": "tsc && npm run minify && npm run copy"
+  },
+  "keywords": [
+    "adventures",
+    "if",
+    "typescript",
+    "javascript",
+    "ts",
+    "js"
+  ],
+  "author": "pgsfredda",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^4.1.0",
+    "lite-server": "^2.4.0",
+    "typescript": "^3.2.2",
+    "uglify-js": "^3.9.2"
+  },
+  "dependencies": {}
+}

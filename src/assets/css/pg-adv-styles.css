@@ -1,0 +1,23 @@
+.pgadv-advlink {
+    color: #007bff;
+    text-decoration: none;
+    background-color: transparent;
+}
+  
+.pgadv-advlink:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+.pgadv-bg-advbody {
+    background-color: #fdfaef;
+    /*background-image: url(../images/tan_parchment_paper_wallpaper_texture_seamless.jpg);*/
+    background-image: url(../images/img-noise-1000x370.png);
+    background-position:top left;
+    background-repeat:repeat;
+    background-attachment:fixed;
+}
+
+.pgadv-small-caps {
+    font-variant: small-caps;
+}
