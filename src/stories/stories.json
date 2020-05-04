@@ -1,0 +1,7 @@
+[
+    {
+        "name": "demo",
+        "file": "stories/demo/demo",
+        "class": "demoStory"
+    }
+]

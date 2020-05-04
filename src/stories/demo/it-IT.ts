@@ -1,4 +1,4 @@
-import { pgAdvMessages } from "./pg-adv-story/pg-adv-lib/pg-adv-lib-defs";
+import { pgAdvMessages } from "../../app/pg-adv-story/pg-adv-lib/pg-adv-lib-defs";
 
 export const IT_Message: pgAdvMessages = {
     parseVerbNotFound: 'Non comprendo la frase: non conosco il verbo',

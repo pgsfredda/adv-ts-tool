@@ -1,14 +1,13 @@
-import { pgAdvLibObject } from "./pg-adv-story/pg-adv-lib/pg-adv-lib-object";
-import { pgAdvStory } from "./pg-adv-story/pg-adv-lib/pg-adv-engine/pg-adv-story";
-import { pgAdvLibVerb } from "./pg-adv-story/pg-adv-lib/pg-adv-lib-verb";
-import { pgAdvLibAction } from "./pg-adv-story/pg-adv-lib/pg-adv-lib-action";
-import { pgAdvLibExitcode } from "./pg-adv-story/pg-adv-lib/pg-adv-lib-defs";
-import { pgAdvEngineNoError } from "./pg-adv-story/pg-adv-lib/pg-adv-engine/pg-adv-engine";
+import { pgAdvLibObject } from "../../app/pg-adv-story/pg-adv-lib/pg-adv-lib-object";
+import { pgAdvStory } from "../../app/pg-adv-story/pg-adv-lib/pg-adv-engine/pg-adv-story";
+import { pgAdvLibVerb } from "../../app/pg-adv-story/pg-adv-lib/pg-adv-lib-verb";
+import { pgAdvLibAction } from "../../app/pg-adv-story/pg-adv-lib/pg-adv-lib-action";
+import { pgAdvLibExitcode } from "../../app/pg-adv-story/pg-adv-lib/pg-adv-lib-defs";
+import { pgAdvEngineNoError } from "../../app/pg-adv-story/pg-adv-lib/pg-adv-engine/pg-adv-engine";
 import { IT_Message } from "./it-IT";
 
 export class demoStory extends pgAdvStory {
     init() {
-
         /*
          * Init general story fields
          */

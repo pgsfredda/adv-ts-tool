@@ -3,6 +3,8 @@ import { pgAdvEngine } from "./pg-adv-engine";
 import { pgAdvLibVerb } from "../pg-adv-lib-verb";
 
 export abstract class pgAdvStory {
+    protected engine : pgAdvEngine;
+
     serial      : string;
     objects     : {};
     actions     : {};
@@ -16,9 +18,10 @@ export abstract class pgAdvStory {
     version     : string;
     messages    : pgAdvMessages;
 
-    constructor(
-        protected engine : pgAdvEngine,
-    ) {};
-
     abstract init();
+
+    setEngine(eng: pgAdvEngine): pgAdvStory {
+        this.engine = eng;
+        return this;
+    }
 }

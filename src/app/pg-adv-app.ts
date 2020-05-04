@@ -1,17 +1,16 @@
 import { pgAdvEngine } from './pg-adv-story/pg-adv-lib/pg-adv-engine/pg-adv-engine';
 import { pgAdvStory } from './pg-adv-story/pg-adv-lib/pg-adv-engine/pg-adv-story';
 import { pgAdvGUI } from './pg-adv-story/pg-adv-lib/pg-adv-gui/pg-adv-gui';
-import { demoStory } from './demo';
 
 export class pgAdvApp {
     gui   : pgAdvGUI
     engine: pgAdvEngine;
     story : pgAdvStory;
 
-    constructor(){
+    constructor(story: pgAdvStory){
         this.gui    = new pgAdvGUI();
         this.engine = new pgAdvEngine(this);
-        this.story  = new demoStory(this.engine);
+        this.story  = story.setEngine(this.engine);
 
         this._init();
         this.engine.eng_start();
