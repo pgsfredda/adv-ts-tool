@@ -20,6 +20,7 @@ function loadJSON(path, success, error)
             }
         }
     };
+    
     xhr.open("GET", path, true);
     xhr.send();
 }
@@ -29,40 +30,47 @@ function errHandle(err, msg) {
     throw err + '.\n' + msg;
 }
 
-var par = getUrlParameter('story') || (document.getElementById('story')?document.getElementById('story').textContent : '');
-if(!par) {
-    try {
-        par = story;    
-    } catch (error) {
-        errHandle('Error: no story data request.', 'You can choose the story using a get parameter "story" (raccomended) or editing index.html file inserting a div with id "story" or setting a var "story" in <string> tag')
-    }
-    
+var par;
+
+(function main(){
+    par = getUrlParameter('story') || (document.getElementById('story')?document.getElementById('story').textContent : '');
+    if(!par && typeof story !== "undefined") par = story;    
+
+    //loadJSON('./stories.json', startStory, function(xhr) { console.error(xhr); });
+
+    //errHandle('Error: no story data request', 'You can choose the story using a get parameter "story" (raccomended) or editing index.html file inserting a div with id "story" or setting a var "story" in <string> tag')
+}());
+
+function isArray(data) {
+    return (data && typeof data === 'object' && data.length && data.length >=0);
 }
 
-loadJSON('stories.json',
-    function(data) { 
-        var storyData;
-        var tmp;
-        
-        if(data && typeof data === 'object' && data.length && data.length > 0) storyData = data.find((d) => {return (d.name == par)});
-        if(!storyData) {
-            errHandle(`Error: story '${par}' not defined`, 'Check stories.json file');
-        }       
-        if(!(storyData.class || storyData.file)){
-            errHandle(`Error: story '${par}' not correctcly defined`, `You have to define all field in stories.json file. Now is: {name: '${storyData.name}' class: '${storyData.class}', file: '${storyData.file}'}`);
-        }       
-        
-        System.import(storyData.file)
-            .then(function(m){ tmp = new m[storyData.class](); })
-            .catch(function(error) { 
-                errHandle(`Error: story starting error`, `{name: '${storyData.name}' class: '${storyData.class}', file: '${storyData.file}'}`);
-            })
-        
-        System.import('app/pg-adv-app')
-            .then(function(m){ new m.pgAdvApp(tmp); })
-            .catch(function(error) { 
-                errHandle(`Error: app starting error`, error);
-            })
-    },
-    function(xhr) { console.error(xhr); }
-);
+function startStory(data) {
+    var storyData;
+
+    if(data && typeof data === 'object') { 
+        if(!isArray(data)) storyData = data
+        else if(data.length == 0) errHandle(`Error: story${par ? ` '${par}'` : ''} not defined`, 'Check stories.json file or startStory function parameter')
+        else if(data.length == 1 && !par) storyData = data[0]
+        else if(data.length == 1 && data[0].name != par) errHandle(`Error: story${par ? ` '${par}'` : ''} not defined`, 'Check stories.json file or startStory function parameter or story parameter')
+        else storyData = data.find((d) => {return (d.name == par)})
+    }
+
+    if(!storyData) errHandle(`Error: story${par ? ` '${par}'` : ''} not defined`, 'Check stories.json file or startStory function parameter or story parameter');
+
+    par = storyData.name || par;
+    if(!(storyData.name && storyData.class && storyData.file)) errHandle(`Error: story${par ? ` '${par}'` : ''} not correctly defined`, `You have to define all field in stories.json file or in startStory function parameter. Now is: {name: '${storyData.name}' class: '${storyData.class}', file: '${storyData.file}'}`);
+
+    System.import(storyData.file)
+        .then(function(m){ 
+            var tmp = new m[storyData.class]();
+            System.import('app/pg-adv-app')
+                .then(function(m){ new m.pgAdvApp(tmp); })
+                .catch(function(error) { 
+                    errHandle(`Error: app starting error`, error);
+                })
+        })
+        .catch(function(error) { 
+            errHandle(`Error: story starting error`, `{name: '${storyData.name}' class: '${storyData.class}', file: '${storyData.file}'}`);
+        })
+}

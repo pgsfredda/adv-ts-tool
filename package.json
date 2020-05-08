@@ -11,7 +11,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "minify": "./node_modules/.bin/uglifyjs --compress --mangle --output ./dist/js/libs.min.js ./dist/js/libs.js",
     "copy": "cp -R ./src/js ./dist && cp -R ./src/assets ./dist && cp ./src/stories/stories.json ./dist/",
-    "build": "tsc && npm run minify && npm run copy"
+    "build": "tsc && npm run copy && npm run minify"
   },
   "keywords": [
     "adventures",
