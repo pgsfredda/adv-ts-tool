@@ -1,5 +1,5 @@
 import { pgAdvApp } from "../../../pg-adv-app";
-import { pgAdvLibText, pgAdvLibPushCmd, pgAdvLibExitcode, pgAdvLibActionInfo, pgAdvLibParsingPhase } from "../pg-adv-lib-defs";
+import { pgAdvLibText, pgAdvLibPushCmd, pgAdvLibExitcode, pgAdvLibActionInfo, pgAdvLibParsingPhase, pgAdvLibCollectionType } from "../pg-adv-lib-defs";
 import { pgAdvLibObject } from "../pg-adv-lib-object";
 import { pgAdvParser } from "./pg-adv-parser";
 
@@ -42,7 +42,7 @@ export class pgAdvEngine {
             this._stopped = false;
             try {
                 this._advApp.story.init();
-                if((this._advApp.story.objects === undefined)||(Object.keys(this._advApp.story.objects).length === 0)) throw "no story objects defined";
+                //if((this._advApp.story.objects === undefined)||(Object.keys(this._advApp.story.objects).length === 0)) throw "no story objects defined";
             } catch (error) {
                 return this.eng_stop(error);  
             };
@@ -89,48 +89,52 @@ export class pgAdvEngine {
         return this._advApp.quit(err);
     }
 
-    obj_object(objID: string): pgAdvLibObject {
-        if (!this.obj_checkID(objID)) throw 'no object found with the given id (' + objID + ')';
-        return ((objID && this._advApp.story.objects)? this._advApp.story.objects[objID] : undefined);
+    obj_object(objID: string, collection: pgAdvLibCollectionType): pgAdvLibObject {
+        if (!this.obj_checkID(objID, collection)) throw `no object found with the given id '${objID}' in collection '${collection}'`;
+        return this._advApp.story[collection][objID];
     }
 
-    obj_parent(objID: string): pgAdvLibObject {
-        let obj = this.obj_object(objID);
-        return (obj? this.obj_object(obj.parent): undefined);
+    obj_parent(objID: string, objColl: pgAdvLibCollectionType, parentColl: pgAdvLibCollectionType): pgAdvLibObject {
+        let obj = this.obj_object(objID, objColl);
+        return (obj? this.obj_object(obj.parent, parentColl): undefined);
     }
 
-    obj_description(obj: string | pgAdvLibObject): pgAdvLibText {
-        let o = (typeof obj === 'string'? this.obj_object(obj) : obj);
+    obj_description(obj: string | pgAdvLibObject, collection: pgAdvLibCollectionType): pgAdvLibText {
+        let o = (typeof obj === 'string'? this.obj_object(obj, collection) : obj);
         return ((o && o.description)? (typeof o.description === 'function'? o.description(): o.description): '');
     }
 
-    obj_checkID(objID: string): boolean {
-        return ((objID)&&(this._advApp.story)&&(this._advApp.story.objects)&&(this._advApp.story.objects[objID] !== undefined));
+    obj_checkID(objID: string, collection: pgAdvLibCollectionType): boolean {
+        return ((objID)&&(this._advApp.story)&&(this._advApp.story[collection])&&(this._advApp.story[collection][objID] !== undefined));
     }
 
     obj_moveTo(objToMoveID: string, toID: string) {
         if(objToMoveID === toID) throw "an object can't move to it self (" + objToMoveID + ')';
 
-        let obj = this.obj_object(objToMoveID);
-        let toObj = this.obj_object(toID);
+        let obj = this.obj_object(objToMoveID, 'objects');
+        let toObj = this.obj_object(toID, 'objects');
 
         if((obj)&&(toObj)) obj.parent = toID;
     }
 
-    set sto_location(objID: string) {
+    set sto_locationID(objID: string) {
         if(this._playerID === undefined) throw "before setting the location you have to set the player's id (i.e. 'player')";
 
-        let obj = this.obj_object(this._playerID);
-        if(obj) this.obj_object(this._playerID).parent = objID;
+        let obj = this.obj_object(this._playerID, 'characters');
+        if(obj) this.obj_object(this._playerID, 'characters').parent = objID;
     }
 
-    get sto_location(): string {
-        return this.obj_object(this._playerID).parent;
+    get sto_locationID(): string {
+        return this.obj_object(this._playerID, 'characters').parent;
+    }
+
+    get sto_location(): pgAdvLibObject {
+        return this.obj_object(this.sto_locationID, 'rooms');
     }
 
     set sto_player(objID: string) {
-        let obj = this.obj_object(objID);
-        this._playerID = objID
+        let obj = this.obj_object(objID, 'characters');
+        this._playerID = (obj? objID : undefined);
     }
 
     get sto_player(): string {

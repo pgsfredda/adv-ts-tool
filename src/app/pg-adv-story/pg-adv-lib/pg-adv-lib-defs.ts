@@ -1,3 +1,5 @@
+import { pgAdvStory } from "./pg-adv-engine/pg-adv-story";
+
 export enum pgAdvLibExitcode {
     stop,
     continue
@@ -36,4 +38,12 @@ export type pgAdvMessages = {
     parseVerbNotFound    : string,
     parseActionNotFound  : string,
     parseNounNotFound    : string,
+}
+
+export type pgAdvLibCollectionType = 'rooms' | 'objects' | 'verbs' | 'actions' | 'characters';
+
+export class pgAdvLibStoryDef {
+    constructor(
+        public story: pgAdvStory
+    ) {};
 }

@@ -1,6 +1,11 @@
-import { pgAdvStory, pgAdvLibObject, pgAdvLibAction, pgAdvEngineNoError, pgAdvLibExitcode, pgAdvLibVerb } from '../../app/pg-adv-story/pg-adv-lib/pg-adv-lib'
+import { pgAdvStory, pgAdvLibAction, pgAdvEngineNoError, pgAdvLibExitcode } from '../../app/pg-adv-story/pg-adv-lib/pg-adv-lib'
 
 import { IT_Message } from "./it-IT";
+import { demoActions } from './demo-actions';
+import { demoObjects } from './demo-objects';
+import { demoVerbs } from './demo-verbs';
+import { demoRooms } from './demo-rooms';
+import { demoCharacters } from './demo-characters';
 
 export class demoStory extends pgAdvStory {
     init() {
@@ -23,71 +28,19 @@ export class demoStory extends pgAdvStory {
         /*
          * Init story dictionary and messages
          */
-        this.messages = IT_Message;
+        this.messages   = IT_Message;
 
-        let paolo = new pgAdvLibObject({
-            external   : 'Il giocatore',
-            description: 'Un vero eroe che non ha paura di addentrarsi nei meandri di un nuovo sistema di gestione delle IF.',
-            name       : ['paolo', 'gabriele'],
-            attributes : { male: true, light: true }
-        });
-
-        let fabia = new pgAdvLibObject({
-            external   : 'La giocatrice',
-            description: 'Una vera eroina che non ha paura di riordinare pur di accedere a un nuovo sistema di gestione delle IF.',
-            name       : ['fabia']
-        });
-
-        this.objects = {
-            player: paolo,
-            radura: new pgAdvLibObject({
-                external   : 'Nella radura',
-                description: "Un luogo suggestivo circondato da alte betulle.<br>L'erba spontanea è verde e non troppo alta.<br>Nell'aria profumo di bosco.",
-                name       : ['radura', 'prato'],
-            }),
-            castle: new pgAdvLibObject({
-                external   : 'Entro le mura del castello',
-                description: 'I torrioni e le mura del castello sono davvero imponenti. Senti ancora le urla dei tanti soldati morti nel tentativo di conquistare questa rocca.',
-                name       : ['castello']
-            }),
-        };
-
-        this.actions = {
-            quitAct: new pgAdvLibAction({
-                func: (info) => {
-                    this.engine.eng_stop(pgAdvEngineNoError); 
-                    return pgAdvLibExitcode.stop;
-                }
-            }),
-            startAct: new pgAdvLibAction({
-                func: (info) => {
-                    this.engine.gui_title = this.engine.obj_parent(this.engine.sto_player).external;
-                    this.engine.gui_print_ret('<br><br><b>' + this.engine.obj_parent(this.engine.sto_player).external + '</b>');
-                    this.engine.gui_print_ret(this.engine.obj_description(this.engine.sto_location));
-                    this.engine.gui_showCmdLine();
-                    
-                    return pgAdvLibExitcode.stop;
-                }
-            }),
-            eatAct: new pgAdvLibAction({
-                func: (info) => {
-                    if(!info.noun) return this.engine.gui_print_ret('Sembra tu non abbia mangiato nulla di interessante');
-                    return this.engine.gui_print_ret('Hai mangiato ' + info.noun + ': ottimo!');
-                }
-            }),
-        };
-
-        this.verbs = [
-            new pgAdvLibVerb({ name: ['q', 'quit', 'fine'], patterns: [{ action: 'quitAct'}]}),
-            new pgAdvLibVerb({ name: ['start'], patterns: [{ action: 'startAct'}]}),
-            new pgAdvLibVerb({ name: ['mangio', 'ingurgito'], patterns: [{ action: 'eatAct'}]}),
-        ]
+        this.rooms      = new demoRooms(this);
+        this.objects    = new demoObjects(this);
+        this.actions    = new demoActions(this);
+        this.characters = new demoCharacters(this);
+        this.verbs      = demoVerbs;
 
         /* 
          * Init starting story fields
          */     
         this.engine.sto_player = 'player';
-        this.engine.sto_location = 'radura';
+        this.engine.sto_locationID = 'radura';
 
         this.engine.gui_footer = this.footer;
         this.engine.gui_print_intro(this.introduction, {prompt: 'Continua', cmd: 'start'});

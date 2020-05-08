@@ -3,11 +3,13 @@ import { pgAdvEngine } from "./pg-adv-engine";
 import { pgAdvLibVerb } from "../pg-adv-lib-verb";
 
 export abstract class pgAdvStory {
-    protected engine : pgAdvEngine;
+    engine : pgAdvEngine;
 
     serial      : string;
+    rooms       : {};
     objects     : {};
     actions     : {};
+    characters  : {};
     verbs       : Array<pgAdvLibVerb> = [];
     author      : string;
     authorSite  : string;
