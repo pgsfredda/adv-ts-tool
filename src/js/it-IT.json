@@ -1,8 +1,0 @@
-{
-    "language": "italian",
-    "version" : "1.0.0",
-    "verbs"   : {
-        "north": ["n"],
-        "south": ["s"] 
-    }
-}

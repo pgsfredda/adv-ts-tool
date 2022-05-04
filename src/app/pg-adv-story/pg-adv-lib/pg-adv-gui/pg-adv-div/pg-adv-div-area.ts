@@ -1,6 +1,6 @@
 export class pgAdvDIVArea {
     ID     : string;
-    element: Element;
+    element: HTMLElement;
 
     constructor(config: { ID: string }) {
         this.ID = config.ID;
@@ -25,10 +25,14 @@ export class pgAdvDIVArea {
     }
 
     hide(h: boolean = true) {
-        this.element['style'] = 'display: ' + (h? 'none' : 'block'); 
+        this.element.style.display = (h? 'none' : 'block');
+    }
+
+    get hidden(): boolean {
+        return (this.element.style.display === 'none')
     }
 
     disable(d: boolean = true) {
-        this.element['disabled'] = (d? 'true' : undefined); 
+        this.element.setAttribute('disabled', (d? 'true' : undefined));
     }
 }

@@ -1,22 +1,22 @@
 import { pgAdvApp } from "../../../pg-adv-app";
-import { pgAdvLibText, pgAdvLibPushCmd, pgAdvLibExitcode, pgAdvLibActionInfo, pgAdvLibParsingPhase, pgAdvLibCollectionType } from "../pg-adv-lib-defs";
-import { pgAdvLibObject } from "../pg-adv-lib-object";
-import { pgAdvParser } from "./pg-adv-parser";
+import { pgAdvLibText, pgAdvLibPushCmd, pgAdvLibExitcode, pgAdvLibParserResult, pgAdvLibLinkData } from "../pg-adv-lib-defs";
+import { pgAdvParser } from "./pg-adv-parser/pg-adv-parser";
+import { pgAdvLibBase } from "../pg-adv-lib-base";
 
 let self;
 
 export const pgAdvEngineNoError = '';
 export const pgAdvEngineStopped = 'engine not started';
 
-export class pgAdvEngine {
+export class pgAdvEngine extends pgAdvLibBase {
 
     protected _stopped : boolean = true;
-    protected _playerID: string;
-    protected _stdlib  : string = 'it-IT';
+    protected _parser  : pgAdvParser;
 
     constructor(
         protected _advApp: pgAdvApp,
     ) {
+        super('Engine');
         self = this;
     }
 
@@ -25,9 +25,9 @@ export class pgAdvEngine {
     }
 
     protected _resolve(value: pgAdvLibPushCmd) {
-        let err = self.eng_next(value);
+        let err = self.next(value);
 
-        if(err) return self.stop(err);
+        if(err) throw err;
         
         self._loop();
     }
@@ -36,139 +36,138 @@ export class pgAdvEngine {
         this._advApp.gui.loop().then(this._resolve);
     }
 
-    eng_start() {
+    getError(mess: string = '') {
+        this.stop(this.getInternalError()); 
+        return super.getError(mess);
+    }
+
+    start() {
         if(this._advApp.story && this._advApp.story.init) {
             this._advApp.gui.clickFunc = this._resolve;
             this._stopped = false;
             try {
                 this._advApp.story.init();
+                this._parser = new pgAdvParser(this._advApp.story);
+                this._loop();
                 //if((this._advApp.story.objects === undefined)||(Object.keys(this._advApp.story.objects).length === 0)) throw "no story objects defined";
             } catch (error) {
-                return this.eng_stop(error);  
+                return this.stop(error);  
             };
-            this._loop();
         }
-        else this.eng_stop('no story definition available');
+        else this.stop('no story definition available');
     }
 
-    eng_messages(info: pgAdvLibActionInfo): string {
-        if(!this._advApp.story.messages) throw "Messages not found. Please, set story messages"
+    stop(err: any) {
+        this._stopped = true;
 
-        if (info.parser == pgAdvLibParsingPhase.verb) return this._advApp.story.messages.parseVerbNotFound;
-        if (info.parser == pgAdvLibParsingPhase.action) return this._advApp.story.messages.parseActionNotFound;
-        if (info.parser == pgAdvLibParsingPhase.noun) return this._advApp.story.messages.parseNounNotFound;
+        this._advApp.gui.addBlock(this._advApp.story.messages.appQuit);
+        this._advApp.gui.clickFunc = undefined;
+
+        return this._advApp.quit(err);
+    }
+
+    messages(res: pgAdvLibParserResult): string {
+        if(!this._advApp.story.messages) throw this.getError("Messages not found. Please, set story messages");
+
+        // put here messages settings about info values
+
+        if(res.warn && res.warn.errno !== 'NO_PE') {
+            //console.warn(this._context, res);
+            switch (res.warn.errno) {
+                case 'GENERIC_PE':
+                    return this._advApp.story.messages.parseNoMeaning(res.sentence);
+                case 'CANTSEE_PE':
+                    return this._advApp.story.messages.parseNotSeen(res.warn.value.data);
+                case 'NOTHELD_PE':
+                    return this._advApp.story.messages.parseNotHeld(res.warn.value.data);
+                default:
+                    return this._advApp.story.messages.parseNoMeaning(res.sentence);
+            }
+        }
+
+        if(!res.info.action) return this._advApp.story.messages.parseActionNotFound;
 
         return "Message not available for this situation";
     }
 
-    eng_parse(cmdValue: pgAdvLibPushCmd) {
-        let parser = new pgAdvParser(this._advApp.story);
-        let info = parser.parse(cmdValue);
+    parse(cmdValue: pgAdvLibPushCmd) {
+        let res : pgAdvLibParserResult;
 
-        if(!info) throw "Parser error: field 'info' not available";
+        try {
+            res = this._parser.parse(cmdValue);    
+        } catch (error) {
+            throw this.getError("Parser error: " + error);
+        }
 
-        if(info.action) info.action.func(info);
-        else this.gui_print_ret(this.eng_messages(info) + ': ' + cmdValue.tokens.join(' '));
+        if(!res || !res.info) throw this.getError("Parser error: field 'res' or 'info' not available");
+
+        if(res.info.action) {
+            if(!this._advApp.story.actions[res.info.action]) throw this.getError(`Action error: '${res.info.action}' not defined or not found in the story`);
+            else this._advApp.story.actions[res.info.action].func(res.info);
+        }
+        else this.gui.print_ret(`${this.messages(res)}`);
     }
 
-    eng_next(cmdValue: pgAdvLibPushCmd) {
+    next(cmdValue: pgAdvLibPushCmd) {
         if(this._stopped) return pgAdvEngineStopped;
 
-        if(cmdValue.options.echo) this.gui_print_ret('>' + cmdValue.tokens.join(" ") + '<br>');
-
-        this.eng_parse(cmdValue);
+        if((cmdValue.options.echo) && (!this.gui.getIsHiddenCmdLine())) {
+            this.gui.print_ret('>' + cmdValue.sentence + '<br>');
+            this.parse(cmdValue);
+        }
+        else if(!cmdValue.options.echo)
+            this.parse(cmdValue);
 
         //evaluating story progress: delete next source row
         //this._advApp.gui.addBlock('tokens: <b>'+ cmdValue.tokens.length + '</b>. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque accumsan arcu sed felis <adv-l>porttitor</adv-l> mollis. Integer consectetur dignissim odio ut consectetur. Vestibulum sit amet nibh in quam malesuada elementum. Donec commodo semper dui ac consectetur. Cras in tellus at est hendrerit semper. Pellentesque vitae auctor urna. Sed pulvinar finibus erat eget ornare. Quisque placerat fringilla neque, at bibendum nulla vehicula in. Sed vestibulum velit at lacus vulputate, vel ultricies orci efficitur.');
     }
 
-    eng_stop(err: any) {
-        this._stopped = true;
+    /**
+     * Engine gui handling methods family
+     *
+     * @memberof pgAdvEngine
+     */
+    gui = {
 
-        this._advApp.gui.addBlock('<b>Bye bye</b>');
-        return this._advApp.quit(err);
-    }
+        clearLinks: () => {
+            this._advApp.gui.clearLinks();
+        },
 
-    obj_object(objID: string, collection: pgAdvLibCollectionType): pgAdvLibObject {
-        if (!this.obj_checkID(objID, collection)) throw `no object found with the given id '${objID}' in collection '${collection}'`;
-        return this._advApp.story[collection][objID];
-    }
+        setFooter: (s: string) => {
+            this._advApp.gui.footer = s;
+        },
 
-    obj_parent(objID: string, objColl: pgAdvLibCollectionType, parentColl: pgAdvLibCollectionType): pgAdvLibObject {
-        let obj = this.obj_object(objID, objColl);
-        return (obj? this.obj_object(obj.parent, parentColl): undefined);
-    }
+        setTitle: (s: string) => {
+            this._advApp.gui.title = s;
+        },
 
-    obj_description(obj: string | pgAdvLibObject, collection: pgAdvLibCollectionType): pgAdvLibText {
-        let o = (typeof obj === 'string'? this.obj_object(obj, collection) : obj);
-        return ((o && o.description)? (typeof o.description === 'function'? o.description(): o.description): '');
-    }
+        hideCmdLine: () => {
+            this._advApp.gui.hideCmdline(true);
+        },
 
-    obj_checkID(objID: string, collection: pgAdvLibCollectionType): boolean {
-        return ((objID)&&(this._advApp.story)&&(this._advApp.story[collection])&&(this._advApp.story[collection][objID] !== undefined));
-    }
+        showCmdLine: () => {
+            this._advApp.gui.hideCmdline(false);
+        },
 
-    obj_moveTo(objToMoveID: string, toID: string) {
-        if(objToMoveID === toID) throw "an object can't move to it self (" + objToMoveID + ')';
+        getIsHiddenCmdLine: (): boolean => {
+            return this._advApp.gui.isHiddenCmdline;
+        },
 
-        let obj = this.obj_object(objToMoveID, 'objects');
-        let toObj = this.obj_object(toID, 'objects');
+        print: (text: pgAdvLibText): pgAdvLibExitcode => {
+            this._advApp.gui.writeText(text);
+            return pgAdvLibExitcode.continue;
+        },
 
-        if((obj)&&(toObj)) obj.parent = toID;
-    }
+        print_ret: (text: pgAdvLibText): pgAdvLibExitcode => {
+            this._advApp.gui.writeText(text, { cr: true });
+            return pgAdvLibExitcode.stop;
+        },
 
-    set sto_locationID(objID: string) {
-        if(this._playerID === undefined) throw "before setting the location you have to set the player's id (i.e. 'player')";
+        print_intro: (intro: pgAdvLibText, pause: pgAdvLibLinkData) => {
+            this._advApp.gui.hideCmdline();
+            this._advApp.gui.writeText(intro, { continue: pause });
+        }
+    
+    };
 
-        let obj = this.obj_object(this._playerID, 'characters');
-        if(obj) this.obj_object(this._playerID, 'characters').parent = objID;
-    }
-
-    get sto_locationID(): string {
-        return this.obj_object(this._playerID, 'characters').parent;
-    }
-
-    get sto_location(): pgAdvLibObject {
-        return this.obj_object(this.sto_locationID, 'rooms');
-    }
-
-    set sto_player(objID: string) {
-        let obj = this.obj_object(objID, 'characters');
-        this._playerID = (obj? objID : undefined);
-    }
-
-    get sto_player(): string {
-        return this._playerID;
-    }
-
-    set gui_footer(s: string) {
-        this._advApp.gui.footer = s;
-    }
-
-    set gui_title(s: string) {
-        this._advApp.gui.title = s;
-    }
-
-    gui_hideCmdLine() {
-        this._advApp.gui.hideCmdline(true);
-    }
-
-    gui_showCmdLine() {
-        this._advApp.gui.hideCmdline(false);
-    }
-
-    gui_print(text: pgAdvLibText): pgAdvLibExitcode {
-        this._advApp.gui.writeText(text);
-        return pgAdvLibExitcode.continue;
-    }
-
-    gui_print_ret(text: pgAdvLibText): pgAdvLibExitcode {
-        this._advApp.gui.writeText(text, { cr: true });
-        return pgAdvLibExitcode.stop;
-    }
-
-    gui_print_intro(intro: pgAdvLibText, pause: { prompt: string, cmd: string }) {
-        this._advApp.gui.hideCmdline();
-        this._advApp.gui.writeText(intro, { cr: true, continue: pause });
-    }
 }

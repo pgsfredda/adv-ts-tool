@@ -1,49 +1,110 @@
-import { pgAdvStory } from "./pg-adv-engine/pg-adv-story";
+import { pgAdvLibObject } from "./pg-adv-lib-object";
 
 export enum pgAdvLibExitcode {
     stop,
-    continue
+    continue,
+    error
 }
 
-export type pgAdvLibText = string | string[];
+export type pgAdvHTMLTag = 'p' | 'h1' | 'h2' | 'h3' | 'h4' | 'div' | 'span';
+export type pgAdvLibComplexString = {text: string, tag: pgAdvHTMLTag, classes?: string};
+export type pgAdvLibString = string | pgAdvLibComplexString;
+export type pgAdvLibText =  string | pgAdvLibString | pgAdvLibString[];
 
-export const pgAdvLinkTag     = 'adv-l';
-export const pgAdvLinkCmdAttr = 'cmd';
-export const pgAdvLinkEchoAttr = 'echo';
+export function pgadvLibStringToString(cs: pgAdvLibComplexString) { return cs.text };
+
+
+export const pgAdvLibLinkTag      = 'adv-l';
+export const pgAdvLibLinkCmdAttr  = 'cmd';
+export const pgAdvLibLinkEchoAttr = 'echo';
+export const pgAdvLibLinkDelAttr  = 'delete';
+
+export type pgAdvLibLinkData = {attr?: string, prompt?: string, cmd?: string | pgAdvLibItemsData[]};
+export type pgAdvLibItemsData = {label: string, value: string};
 
 export type pgAdvLibObjectFuncOpts = {};
 export type pgAdvLibObjectFunc = (options?: pgAdvLibObjectFuncOpts) => pgAdvLibText;
-export type pgAdvLibObjectAttributes = { male?: boolean, female?: boolean, [key: string]: boolean }
-
-export type pgAdvLibPushCmdOpts = {echo?: boolean};
-export type pgAdvLibPushCmd = {tokens: string[], options: pgAdvLibPushCmdOpts};
-
-export enum pgAdvLibParsingPhase {
-    init,
-    verb,
-    action,
-    noun,
-    compass,
-    complete
+export type pgAdvLibObjectAttributes = { 
+    male?: boolean, 
+    female?: boolean, 
+    [key: string]: boolean 
 }
 
-export type pgAdvLibActionInfo = { actor?: any, action: any, noun?: any, second?: any, parser?: pgAdvLibParsingPhase};
-export type pgAdvLibActionFunc = (info: pgAdvLibActionInfo) => pgAdvLibExitcode;
+export type pgAdvLibPushCmdOpts = {
+    echo?: boolean
+};
+
+export type pgAdvLibPushCmd = {
+    sentence: string, 
+    options: pgAdvLibPushCmdOpts
+};
+
+export type pgAdvLibActionInfo = { 
+    actor  : any,
+    verb   : any,
+    action : any,
+    noun   : any,
+    second : any,
+    options: any;
+};
+
+export type pgAdvLibParserResult = {
+    sentence: string,
+    info : Partial<pgAdvLibActionInfo>,
+    warn?: pgAdvLibParserError,
+}
+
+export type pgAdvLibActionFunc = (info: Partial<pgAdvLibActionInfo>) => pgAdvLibExitcode;
+
+export type pgAdvParserTokenTypes = 'noun' | 'multi' | 'multiExcept' | 'multiInside' | 'held' | 'multiHeld' | 'creature' | 'number' | 'special' | 'topic';
 
 export enum pgAdvParsingContext {
     noun,
 }
 
-export type pgAdvMessages = {
-    parseVerbNotFound    : string,
-    parseActionNotFound  : string,
-    parseNounNotFound    : string,
+export class pgAdvLibMessages {
+    appQuit              : string;
+    appQuitWithErrors    : string;
+    appInputPlaceholder  : string;
+    parseVerbNotFound    : string;
+    parseActionNotFound  : string;
+    parseNounNotFound    : string;
+    parseNoMeaning       : ((data: string) => string);
+    parseNotHeld         : ((data: string) => string);
+    parseNotSeen         : ((data: string) => string);
+    storyExitsInit       : string;
+    storyExitsCurr       : string;
+    storyObjsInit        : string;
+    storyObjsCurr        : string;
+    storyExitNoAllowed   : ((data: string) => string);
+    storyGenericAction   : ((data: Partial<pgAdvLibActionInfo>) => string);
 }
 
 export type pgAdvLibCollectionType = 'rooms' | 'objects' | 'verbs' | 'actions' | 'characters';
 
-export class pgAdvLibStoryDef {
-    constructor(
-        public story: pgAdvStory
-    ) {};
+
+export type pgAdvLibParserErrorNumber = 'NO_PE' | 'GENERIC_PE' | 'NOTHELD_PE' | 'CANTSEE_PE' | 'NOTHING_PE' | 'VERB_PE' | 'EXCEPT_PE' | 'TOOLIT_PE';
+
+export type pgAdvLibParserErrorValue = {
+    actor     : any,
+    actionName: string,
+    data      : any,
+    inside    : any,
+    attr      : any,
+    verb      : string,
+}
+
+export type pgAdvLibParserError = {
+    errno: pgAdvLibParserErrorNumber,
+    value: Partial<pgAdvLibParserErrorValue>,
+}
+
+export type pgAdvLibRoomDescriptionOptions = {
+    exits?:boolean, 
+    objs?:boolean
+}
+
+export const pgAdvLibRoomDescriptionOptionsDefault = {
+    exits: true, 
+    objs: true,
 }

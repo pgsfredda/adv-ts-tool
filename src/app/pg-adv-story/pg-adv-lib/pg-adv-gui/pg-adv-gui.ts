@@ -3,7 +3,9 @@ import { pgAdvHeaderDIV } from "./pg-adv-div/pg-adv-header-div";
 import { pgAdvDIVBody, pgAdvBodyAddOptions } from "./pg-adv-div/pg-adv-div-body";
 import { pgAdvDIVFooter } from "./pg-adv-div/pg-adv-div-footer";
 import { pgAdvDIVConfig } from "./pg-adv-div/pg-adv-div-config";
-import { pgAdvLibText, pgAdvLinkTag, pgAdvLinkCmdAttr, pgAdvLibPushCmd, pgAdvLinkEchoAttr } from "../pg-adv-lib-defs";
+import { pgAdvLibText, pgAdvLibPushCmd, pgAdvLibString, pgAdvLibLinkCmdAttr, pgAdvLibLinkEchoAttr, pgAdvLibLinkDelAttr, pgAdvLibLinkData } from "../pg-adv-lib-defs";
+import { pgAdvApp } from "../../../pg-adv-app";
+import { getAdvLink } from "../pg-adv-utils";
 
 export class pgAdvGUI {
     protected _loaderDIV: pgAdvDIVArea;
@@ -16,7 +18,9 @@ export class pgAdvGUI {
     protected _errorMessage: string;
     protected _errorClasses: string;
 
-    constructor() {};
+    constructor(
+        protected _advApp: pgAdvApp,
+    ) {};
 
     setup(divConfig: pgAdvDIVConfig) {
 
@@ -71,40 +75,55 @@ export class pgAdvGUI {
         });
 
         let copy = this._storyDIV.element.getElementsByTagName('div').namedItem('pg-adv-copy');
-        copy.innerHTML = '<p><small>adv TS tool by <a href="http://paologabrielesfredda.it" target="_blank">pgsfredda</a> @ 2019, Italy<small><p>';
+        copy.innerHTML =  '<p><small>adv TS tool is a <a href="http://creativaweb.it" target="_blank">creativaweb</a> production by <a href="http://paologabrielesfredda.it" target="_blank">pgsfredda</a> &copy; 2019-2022, Italy.<small><p>';
         copy.className = divConfig.copyDIVClasses;
 
         this._loaderDIV.hide();
     }
 
-    addBlock(content: string, options?: pgAdvBodyAddOptions) {
-        this._bodyDIV.add(content, options);
+    clearLinks() {
+        this._bodyDIV.removeAdvLinks();
     }
 
-    writeText(text: pgAdvLibText, options?: { continue?: {prompt: string, cmd?: string}, cr?: boolean, blockOpts?: pgAdvBodyAddOptions}) {
+    addBlock(content: string | pgAdvLibString, options?: pgAdvBodyAddOptions) {
+        this._bodyDIV.add(typeof content === 'string'? content: content.text, options);
+    }
+
+    mergeBlockOptions(content: string | pgAdvLibString, options?: pgAdvBodyAddOptions): pgAdvBodyAddOptions {
+        let opt: pgAdvBodyAddOptions;
+        
+        if(content && typeof content !== 'string') {
+            opt = {
+                tag: content.tag || (options? options.tag: undefined),
+                classes: content.classes || (options? options.classes: undefined),
+            }
+        }
+        else {
+            opt = options
+        }
+
+        return opt;
+    }
+
+    writeText(text: pgAdvLibText, options?: { continue?: pgAdvLibLinkData, cr?: boolean, blockOpts?: pgAdvBodyAddOptions}) {
         let bo = (options?options.blockOpts: undefined);
 
-        if(Array.isArray(text)) text.forEach(t => this.addBlock(t, bo))
-        else this.addBlock(text, bo);
-        if((options)&&(options.cr)) this.writeEmptyLine(bo);
+        if(!Array.isArray(text)) text = [text];
+        
+        text.forEach(t => {
+            this.addBlock(t, this.mergeBlockOptions(t, bo));
+            if((options)&&(options.cr)) this.writeEmptyLine(bo);
+        });
+        //else this.addBlock(text, this.mergeBlockOptions(text, bo));    
+        
         if((options)&&(options.continue)) {
-            this.addBlock(this.getAdvLink(options.continue.prompt, undefined, [{attr: pgAdvLinkCmdAttr, cmd: options.continue.cmd}, {attr: pgAdvLinkEchoAttr, cmd: 'false'}]), bo)
-            this.writeEmptyLine(bo);
+            this.addBlock(getAdvLink(options.continue.prompt, undefined, [{attr: pgAdvLibLinkCmdAttr, cmd: options.continue.cmd}, {attr: pgAdvLibLinkEchoAttr, cmd: 'false'}, {attr: pgAdvLibLinkDelAttr, cmd: 'true'}]), bo);
+            //this.writeEmptyLine(bo);
         };
     }
 
     writeEmptyLine(blockOpts?: pgAdvBodyAddOptions) {
         this.addBlock('&nbsp;<br>', blockOpts);
-    }
-
-    getAdvLink(prompt: string, tag: string = pgAdvLinkTag, opts?: {attr: string, cmd: string}[]) {
-        let res: string = '';
-
-        res = '<' + tag;
-        if(opts) res += opts.reduce((prev, curr)=> { return prev + ' ' + curr.attr + '="' + curr.cmd + '"'}, '');
-        res += '>' + prompt + '</' + tag + '>';
-        
-        return res;
     }
 
     clearText() {
@@ -145,6 +164,10 @@ export class pgAdvGUI {
 
     hideCmdline(h: boolean = true) {
         this._bodyDIV.hideCmdline(h);
+    }
+
+    get isHiddenCmdline(): boolean {
+        return this._bodyDIV.isHiddenCmdline;
     }
 
     loop(): Promise<pgAdvLibPushCmd> {

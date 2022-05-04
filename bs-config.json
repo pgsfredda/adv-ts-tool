@@ -1,7 +1,7 @@
 {
     "port": 3000,
     "server": {
-      "baseDir": "./"
+        "baseDir": "./"
     },
-    "browser": ["chrome"]
-  }
+    "browser": ["Google Chrome"]
+}

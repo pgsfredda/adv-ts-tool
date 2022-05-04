@@ -1,7 +1,6 @@
-[
-    {
-        "name": "demo",
-        "file": "stories/demo/demo",
-        "class": "demoStory"
-    }
-]
+[{
+    "name": "demo",
+    "file": "stories/demo/demo",
+    "class": "demoStory",
+    "lang": "IT"
+}]

@@ -1,17 +1,19 @@
-import { pgAdvLibExitcode, pgAdvLibText, pgAdvLibObjectFunc, pgAdvLibObjectAttributes } from "./pg-adv-lib-defs";
+import { pgAdvLibExitcode, pgAdvLibText, pgAdvLibObjectFunc, pgAdvLibObjectAttributes, pgAdvLibItemsData } from "./pg-adv-lib-defs";
 import { pgAdvLibToken } from "./pg-adv-lib-token";
 
 export class pgAdvLibObjectDef {
-    external?   : string;
-    description?: pgAdvLibText | pgAdvLibObjectFunc ;
-    parent?     : string;
-    name?       : Array<string>;
-    attributes? : pgAdvLibObjectAttributes;
+    ID          : string;
+    external    ?: string;
+    description ?: pgAdvLibText | pgAdvLibObjectFunc ;
+    name        ?: Array<string>;
+    attributes  ?: pgAdvLibObjectAttributes;
+    float       ?: Array<string>;
 }
 
 export class pgAdvLibObject extends pgAdvLibObjectDef {
 
-    protected _name?: Array<pgAdvLibToken> = [];
+    protected _parent?: pgAdvLibObject;
+    protected _name?  : Array<pgAdvLibToken> = [];
  
     constructor(config?: pgAdvLibObjectDef) {
         super();
@@ -34,9 +36,19 @@ export class pgAdvLibObject extends pgAdvLibObjectDef {
         return a;
     }
 
+    set parent(parent: pgAdvLibObject) {
+        this._parent = parent;
+        this._parent[this.ID] = this;
+    }
+
+    get parent() {
+        return this._parent;
+    }
+
     toString(): string {
         let d = (typeof this.description === 'function'? this.description() : this.description);
-        return Array.isArray(d)? d.reduce((prev, curr) => { return prev + '<p>' + curr + '</p>'}, '') : d;
+        //return Array.isArray(d)? d.reduce((prev, curr) => { return prev.toString() + '<p>' + curr + '</p>'}, '') : d;
+        return '';
     }
 
     after?(verb:string): pgAdvLibExitcode { return pgAdvLibExitcode.continue };

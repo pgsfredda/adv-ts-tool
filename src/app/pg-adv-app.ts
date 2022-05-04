@@ -8,12 +8,13 @@ export class pgAdvApp {
     story : pgAdvStory;
 
     constructor(story: pgAdvStory){
-        this.gui    = new pgAdvGUI();
+        this.gui    = new pgAdvGUI(this);
         this.engine = new pgAdvEngine(this);
-        this.story  = story.setEngine(this.engine);
+        this.story  = story;
+        story.engine = this.engine;
 
         this._init();
-        this.engine.eng_start();
+        this.engine.start();
     };
 
     quit(err?: any) {
@@ -41,15 +42,15 @@ export class pgAdvApp {
             headerDIVLine2Classes : '',
             bodyDIVClasses        : 'pgadv-bg-advbody text-dark px-2',
             bodyDIVHeight         : '80vh',
-            footerDIVClasses      : 'pgadv-bg-advbody px-2',
+            footerDIVClasses      : 'pgadv-bg-advbody',
             advLinkClasses        : 'pgadv-advlink',
             inputRowClasses       : 'd-flex my-3',
             inputRowPrompt        : '',
             inputLabelClasses     : 'col-auto pl-2 col-form-label',
-            inputClasses          : 'form-control',
+            inputClasses          : 'form-control pgadv-form-control',
             inputDIVClasses       : 'flex-grow-1 p-0',
-            inputPlaceholder      : 'what do you do?',
-            errorMessage          : 'adv TS tool stopped with errors: ',
+            inputPlaceholder      : this.story.messages.appInputPlaceholder,
+            errorMessage          : this.story.messages.appQuitWithErrors,
             errorClasses          : 'p-3 mb-2 bg-danger text-white'
         });
     }

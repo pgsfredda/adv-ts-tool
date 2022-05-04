@@ -11,10 +11,10 @@
         "moduleResolution": "node",
         "sourceMap": false,
         "rootDir": "./src",
-        "outFile": "./dist/js/libs.js"
+        "outFile": "./dist/js/libs.js",
     },
     "include": [
-        "src/**/*.ts"
+        "src/**/*.ts", "src/app/pg-adv-story/pg-adv-lib/pg-adv-engine/pg-adv-parser/pg-adv-parser-functions.js",
     ],
     "exclude": [
         "node_modules",

@@ -1,7 +1,5 @@
-import { pgAdvLibVerb } from "../../app/pg-adv-story/pg-adv-lib/pg-adv-lib";
+import { pgAdvLibVerbList } from "../../app/pg-adv-story/pg-adv-lib/pg-adv-lib-verb-list";
 
-export const demoVerbs = [
-    new pgAdvLibVerb({ name: ['q', 'quit', 'fine'], patterns: [{ action: 'quitAct'}]}),
-    new pgAdvLibVerb({ name: ['start'], patterns: [{ action: 'startAct'}]}),
-    new pgAdvLibVerb({ name: ['mangio', 'ingurgito'], patterns: [{ action: 'eatAct'}]}),
-]
+export const demoVerbs = new pgAdvLibVerbList([
+    { words: ['mangio', 'ingurgito'], patterns: [{ tokens:['multiHeld'], action: 'eatAct'}, { action: 'eatAct'}]},
+]);

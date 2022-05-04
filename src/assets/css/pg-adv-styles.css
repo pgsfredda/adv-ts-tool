@@ -1,23 +1,110 @@
+:root {
+    --pgadv-advbody-bgcolor: #fdfaef;
+    --pgadv-formcontrol-border: #aaaaaa;
+    --pgadv-advlink-color: #6b705c;
+    --pgadv-advlink-bgcolor: #ddbea9;
+    --pgadv-advlink-color-hover: #ffe8d6;
+    --pgadv-advlink-bgcolor-hover: #6b705c;
+    --pgadv-floatitems-color: #ffe8d6;
+    --pgadv-floatitems-bgcolor: #6b705c;
+}
+
 .pgadv-advlink {
+    color: var(--pgadv-advlink-color);
+    background-color: var(--pgadv-advlink-bgcolor);
+    border-radius: 40px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
+
+.pgadv-advlink:hover {
+    color: var(--pgadv-advlink-color-hover);
+    background-color: var(--pgadv-advlink-bgcolor-hover);
+    border-radius: 40px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
+
+
+/* .pgadv-advlink {
     color: #007bff;
     text-decoration: none;
     background-color: transparent;
-}
-  
-.pgadv-advlink:hover {
+} */
+
+
+/* .pgadv-advlink:hover {
     color: #0056b3;
     text-decoration: underline;
-}
+} */
 
 .pgadv-bg-advbody {
-    background-color: #fdfaef;
+    background-color: var(--pgadv-advbody-bgcolor);
     /*background-image: url(../images/tan_parchment_paper_wallpaper_texture_seamless.jpg);*/
     background-image: url(../images/img-noise-1000x370.png);
-    background-position:top left;
-    background-repeat:repeat;
-    background-attachment:fixed;
+    background-position: top left;
+    background-repeat: repeat;
+    background-attachment: fixed;
 }
 
 .pgadv-small-caps {
     font-variant: small-caps;
+}
+
+#cmdline-input {
+    outline: none;
+}
+
+.pgadv-title {
+    margin-top: 1em;
+}
+
+.pgadv-form-control:focus {
+    box-shadow: none;
+    border-color: var(--pgadv-formcontrol-border);
+}
+
+
+/* 
+ * FLOATING SELECT
+ */
+
+.pgadv-float-select {
+    position: absolute;
+    font-family: Arial;
+}
+
+.pgadv-float-selected {
+    background-color: var(--pgadv-floatitems-bgcolor);
+}
+
+.pgadv-float-items div,
+.pgadv-float-selected {
+    color: var(--pgadv-floatitems-color);
+    padding: 8px 8px;
+    border: 1px solid transparent;
+    border-color: transparent transparent rgba(0, 0, 0, 0.1) transparent;
+    cursor: pointer;
+    user-select: none;
+}
+
+.pgadv-float-items {
+    position: absolute;
+    background-color: var(--pgadv-floatitems-bgcolor);
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 99;
+    -webkit-box-shadow: 5px 5px 5px 0px rgba(135, 135, 135, 0.5);
+    -moz-box-shadow: 5px 5px 5px 0px rgba(135, 135, 135, 0.5);
+    box-shadow: 5px 5px 5px 0px rgba(135, 135, 135, 0.5);
+}
+
+.pgadv-float-items div:hover,
+.pgadv-same-as-selected {
+    background-color: rgba(0, 0, 0, 0.1);
 }

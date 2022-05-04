@@ -40,27 +40,14 @@ export class pgAdvDIVCmdline extends pgAdvDIVArea {
         this.input.element.setAttribute('placeholder', config.placeholder || '');
     }
 
-    get cmdTokens(): string[] {
-        let cmdArr = this.cmd.split(/[^a-z,A-Z,0-9]/g);
-        let res = [];
-	
-		cmdArr.forEach((el, id) => {
-			if(cmdArr[id]) {
-				res.push(cmdArr[id]);
-			}
-		});
-		
-		return res;
-    }
-
     pushCmd(cmd: string, resolve: (value: pgAdvLibPushCmd)=> any, options?: pgAdvLibPushCmdOpts) {
-        if(cmd) {
+        if(cmd && resolve) {
             this.cmd = cmd;
             if(this.history.length === pgAdvDIVCmdlineMaxHistory) this.history.splice(0, 1);
             this.history.push(this.cmd);
             this.current = this.history.length-1;
             this.disable();
-            resolve({tokens: this.cmdTokens, options: options || {} });
+            resolve({sentence: this.cmd, options: options || {} });
             this.resetInput();
             this.disable(false);
         }
@@ -75,7 +62,7 @@ export class pgAdvDIVCmdline extends pgAdvDIVArea {
         return new Promise((resolve, eject)=> {
             this.input.element['onkeypress'] = (event) => { 
                 if(event.keyCode == 13) {
-                    this.pushCmd(event.srcElement.value, resolve , { echo: true });
+                    this.pushCmd(event.srcElement['value'], resolve , { echo: true });
                 };
             };
             this.input.element['onkeydown'] = (event: KeyboardEvent) => { 

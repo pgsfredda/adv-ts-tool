@@ -5,5 +5,5 @@
 - Integrated multilingual system
 - Output HTML based
 - Fully customizable graphic appearance
-- No dependence on third party software
+- No dependence on third party software except bootstrap
 - All open source
